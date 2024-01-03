@@ -1,7 +1,12 @@
 #![deny(missing_docs)]
 //! A memory key-value store.
+mod error;
 
-use std::{collections::HashMap, path::PathBuf};
+use error::KvsError;
+use std::{collections::HashMap, path::PathBuf, result};
+
+/// The result type of this crate.
+pub type Result<T> = result::Result<T, KvsError>;
 
 /// A key-value store.
 #[derive(Default)]
@@ -22,26 +27,24 @@ impl KvStore {
     }
 
     /// Get the value by a key, if the key does not exists, will return None.
-    pub fn get(&mut self, key: String) -> Option<String> {
+    pub fn get(&mut self, key: String) -> Result<Option<String>> {
         if self.data.contains_key(&key) {
-            return self.data.get(&key).cloned();
+            return Ok(self.data.get(&key).cloned());
         } else {
-            None
+            Err(KvsError::Unknown)
         }
     }
 
     /// Remove data by a key.
-    pub fn remove(&mut self, key: String) {
+    pub fn remove(&mut self, key: String) -> Result<()> {
         if self.data.contains_key(&key) {
             self.data.remove(&key);
         }
+        Ok(())
     }
 
     /// Open the KvStore at a given path.
-    pub fn open(path: impl Into<PathBuf>) -> Result<()> {
-        unimplemented!("unimplemented");
+    pub fn open(_path: impl Into<PathBuf>) -> Result<KvStore> {
+        Ok(KvStore::new())
     }
 }
-
-/// Result type
-pub struct Result<T> {}

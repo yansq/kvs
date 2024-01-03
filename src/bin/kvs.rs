@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use kvs::KvStore;
+use kvs::{KvStore, Result};
 
 #[derive(Debug, Parser)]
 #[command(name = "kvs", author, version, about)]
@@ -26,7 +26,7 @@ enum Command {
     },
 }
 
-fn main() {
+fn main() -> Result<()> {
     let mut _kv_store: KvStore = Default::default();
     let args = Cli::parse();
     match args.command {

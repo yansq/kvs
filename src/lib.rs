@@ -16,9 +16,9 @@ impl KvStore {
     }
 
     /// Set a key-value pair, if the key already exists, it will be overwritten.
-    pub fn set(&mut self, key: String, value: String) -> Result<(), String> {
+    pub fn set(&mut self, key: String, value: String) -> Result<()> {
         self.data.insert(key, value);
-        Ok(())
+        unimplemented!("unimplemented");
     }
 
     /// Get the value by a key, if the key does not exists, will return None.
@@ -38,7 +38,10 @@ impl KvStore {
     }
 
     /// Open the KvStore at a given path.
-    pub fn open(path: impl Into<PathBuf>) -> Result<KvStore, String> {
+    pub fn open(path: impl Into<PathBuf>) -> Result<()> {
         unimplemented!("unimplemented");
     }
 }
+
+/// Result type
+pub struct Result<T> {}

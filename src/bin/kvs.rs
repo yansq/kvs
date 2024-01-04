@@ -27,13 +27,10 @@ enum Command {
 }
 
 fn main() -> Result<()> {
-    let mut _kv_store: KvStore = Default::default();
+    let mut kv_store = KvStore::open("store.txt")?;
     let args = Cli::parse();
     match args.command {
-        Command::Set { key, value } => {
-            unimplemented!("unimplemented");
-            //kv_store.set(key, value);
-        }
+        Command::Set { key, value } => kv_store.set(key, value),
         Command::Get { key } => {
             unimplemented!("unimplemented");
             // let _value = kv_store.get(key);

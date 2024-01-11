@@ -16,13 +16,6 @@ use walkdir::WalkDir;
 pub type Result<T> = result::Result<T, KvsError>;
 
 /// The store unit in file
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Log {
-    key: String,
-    value: String,
-}
-
-/// The store unit in file
 #[derive(Debug, Subcommand, Deserialize, Serialize)]
 pub enum Command {
     /// Set a key-value pair
@@ -143,19 +136,17 @@ impl KvStore {
     fn replay(reader: BufReader<File>, index: &mut HashMap<String, u64>) -> u64 {
         let mut stream = Deserializer::from_reader(reader).into_iter::<Command>();
         let mut offset = 0;
-        while let Some(command) = stream.next() {
-            if let Ok(command) = command {
-                match command {
-                    Command::Set { key, .. } => {
-                        index.insert(key, offset);
-                    }
-                    Command::Rm { key, .. } => {
-                        index.remove(&key);
-                    }
-                    _ => {}
-                };
-                offset = stream.byte_offset() as u64;
-            }
+        while let Some(Ok(command)) = stream.next() {
+            match command {
+                Command::Set { key, .. } => {
+                    index.insert(key, offset);
+                }
+                Command::Rm { key, .. } => {
+                    index.remove(&key);
+                }
+                _ => {}
+            };
+            offset = stream.byte_offset() as u64;
         }
         offset
     }
@@ -174,7 +165,11 @@ impl KvStore {
 
     // Compact log file by creating a new file and then replacing the old file
     fn compact(&mut self) -> Result<()> {
-        let path: PathBuf = self.path.parent().unwrap().join("store_new.txt");
+        let path: PathBuf = self
+            .path
+            .parent()
+            .expect("fail to get parent path")
+            .join("store_new.txt");
         if !path.exists() {
             File::create(path.clone())?;
         }

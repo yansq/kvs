@@ -299,4 +299,3 @@ fn compaction() -> Result<()> {
 
     panic!("No compaction detected");
 }
-

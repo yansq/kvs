@@ -1,5 +1,6 @@
-use clap::{Parser, Subcommand};
-use kvs::{KvStore, Result};
+use clap::Parser;
+use kvs::{Command, KvStore, Result};
+use std::env;
 
 #[derive(Debug, Parser)]
 #[command(name = "kvs", author, version, about)]
@@ -8,36 +9,18 @@ struct Cli {
     command: Command,
 }
 
-#[derive(Debug, Subcommand)]
-enum Command {
-    Set {
-        #[arg(value_name = "KEY")]
-        key: String,
-        #[arg(value_name = "VALUE")]
-        value: String,
-    },
-    Get {
-        #[arg(value_name = "KEY")]
-        key: String,
-    },
-    Rm {
-        #[arg(value_name = "KEY")]
-        key: String,
-    },
-}
-
 fn main() -> Result<()> {
-    let mut kv_store = KvStore::open("store.txt")?;
+    let cur_dir = env::current_dir()?;
+    let mut kv_store = KvStore::open(cur_dir)?;
     let args = Cli::parse();
     match args.command {
         Command::Set { key, value } => kv_store.set(key, value),
         Command::Get { key } => {
-            unimplemented!("unimplemented");
-            // let _value = kv_store.get(key);
+            if let Ok(Some(value)) = kv_store.get(key) {
+                println!("{}", value);
+            }
+            Ok(())
         }
-        Command::Rm { key } => {
-            unimplemented!("unimplemented");
-            // kv_store.remove(key);
-        }
+        Command::Rm { key } => kv_store.remove(key),
     }
 }

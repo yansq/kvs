@@ -10,7 +10,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{prelude::*, BufReader, BufWriter};
 use std::{path::PathBuf, result};
-use walkdir::WalkDir;
 
 /// The result type of this crate.
 pub type Result<T> = result::Result<T, KvsError>;
@@ -48,6 +47,7 @@ pub struct KvStore {
     writer: BufWriter<File>,
     index: HashMap<String, u64>,
     offset: u64,
+    count: i32,
 }
 
 impl KvStore {
@@ -63,9 +63,10 @@ impl KvStore {
         self.index.insert(key, self.offset);
         self.offset = self.writer.stream_position()?;
 
-        let dir_size = Self::dir_size(self.path.clone());
-        if dir_size > 10240 && !self.path.parent().unwrap().join("store_new.txt").exists() {
+        if self.count > 968 && !self.path.parent().unwrap().join("store_new.txt").exists() {
             self.compact()?;
+        } else {
+            self.count += 1;
         }
 
         Ok(())
@@ -97,9 +98,10 @@ impl KvStore {
             let log = serde_json::to_string(&command)?;
             self.writer.write_all(log.as_bytes())?;
 
-            let dir_size = Self::dir_size(self.path.clone());
-            if dir_size > 10240 {
+            if self.count > 968 {
                 self.compact()?;
+            } else {
+                self.count += 1;
             }
 
             return Ok(());
@@ -129,6 +131,7 @@ impl KvStore {
             writer,
             index,
             offset,
+            count: 0,
         })
     }
 
@@ -149,18 +152,6 @@ impl KvStore {
             offset = stream.byte_offset() as u64;
         }
         offset
-    }
-
-    // Calculate the size of the directory
-    fn dir_size(path: impl Into<PathBuf>) -> u64 {
-        let entries = WalkDir::new(path.into()).into_iter();
-        let len: walkdir::Result<u64> = entries
-            .map(|res| {
-                res.and_then(|entry| entry.metadata())
-                    .map(|metadata| metadata.len())
-            })
-            .sum();
-        len.expect("fail to get directory size")
     }
 
     // Compact log file by creating a new file and then replacing the old file
@@ -208,6 +199,7 @@ impl KvStore {
         self.writer = writer;
         self.index = index;
         self.offset = offset;
+        self.count = 0;
 
         Ok(())
     }

@@ -1,5 +1,7 @@
 use clap::Parser;
 use kvs::Result;
+use tracing::{info, Level};
+use tracing_subscriber;
 
 /// kvs-server [--addr IP-PORT] [--engine ENGINE-NAME]
 #[derive(Debug, Parser)]
@@ -12,9 +14,11 @@ struct ServerCli {
 }
 
 fn main() -> Result<()> {
+    tracing_subscriber::fmt().with_max_level(Level::INFO).init();
+
     let mut ip_port = "127.0.0.1:4000".to_string();
     let cli = ServerCli::parse();
-    println!("{:#?}", cli);
+    info!("{:#?}", cli);
 
     if let Some(addr) = cli.addr {
         ip_port = addr;

@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{prelude::*, BufReader, BufWriter};
 use std::{path::PathBuf, result};
+use tracing::{info, instrument};
 
 /// The result type of this crate.
 pub type Result<T> = result::Result<T, KvsError>;
@@ -41,6 +42,7 @@ pub enum Command {
 }
 
 /// A key-value store.
+#[derive(Debug)]
 pub struct KvStore {
     path: PathBuf,
     reader: BufReader<File>,
@@ -75,6 +77,7 @@ impl KvStore {
     /// Get the value by a key, if the key does not exists, will return None.
     /// Search the index map, if not found, return None;
     /// otherwise use the offset in index map to read data from file and return.
+    #[instrument]
     pub fn get(&mut self, key: String) -> Result<Option<String>> {
         if let Some(offset) = self.index.get(&key) {
             self.reader.seek(std::io::SeekFrom::Start(*offset))?;
@@ -86,11 +89,12 @@ impl KvStore {
                 }
             }
         }
-        println!("Key not found");
+        info!("Key not found");
         Ok(None)
     }
 
     /// Remove data by a key.
+    #[instrument]
     pub fn remove(&mut self, key: String) -> Result<()> {
         if self.index.get(&key).is_some() {
             self.index.remove(&key);
@@ -106,7 +110,7 @@ impl KvStore {
 
             return Ok(());
         }
-        println!("Key not found");
+        info!("Key not found");
         Err(KvsError::KeyNotFound)
     }
 

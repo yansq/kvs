@@ -1,9 +1,10 @@
 use clap::Parser;
-use kvs::{Command, KvStore, Result};
+use kvs::Command;
+use kvs::{KvStore, Result};
 use std::env;
 
 #[derive(Debug, Parser)]
-#[command(name = "kvs", author, version, about)]
+#[command(name = "kvs-client", author, version, about)]
 struct Cli {
     #[command(subcommand)]
     command: Command,

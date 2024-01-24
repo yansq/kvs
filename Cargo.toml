@@ -6,10 +6,17 @@ description = "A key-value store"
 edition = "2021"
 
 [lib]
+name = "kvs"
 test = false
 
 [[bin]]
-name = "kvs"
+name = "server"
+src = "src/bin/server.rs"
+test = false
+
+[[bin]]
+name = "client"
+src = "src/bin/client.rs"
 test = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -25,3 +32,5 @@ assert_cmd = "2.0.12"
 predicates = "3.0.4"
 tempfile = "3.9"
 walkdir = "2.4"
+criterion = "0.5.1"
+rand = "0.8.5"
